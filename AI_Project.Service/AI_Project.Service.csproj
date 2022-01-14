@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EPPlus" Version="5.8.4" />
+    <PackageReference Include="Keras.NET" Version="3.8.5" />
+    <PackageReference Include="pythonnet_netstandard_py38_win" Version="2.5.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AI_Project.Domain\AI_Project.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
