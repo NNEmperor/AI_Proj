@@ -9,5 +9,6 @@ namespace AI_Project.Domain.Interfaces
     {
         void AddData(IEnumerable<Weather> data);
         IEnumerable<Weather> GetData();
+        IEnumerable<Weather> GetDataForPrediction();
     }
 }

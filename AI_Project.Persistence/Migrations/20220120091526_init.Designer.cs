@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AI_Project.Persistence.Migrations
 {
     [DbContext(typeof(DataDbContext))]
-    [Migration("20220113074013_init")]
+    [Migration("20220120091526_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,6 +47,9 @@ namespace AI_Project.Persistence.Migrations
                         .HasColumnType("real");
 
                     b.Property<float>("Temperature")
+                        .HasColumnType("real");
+
+                    b.Property<float>("TimeOfDay")
                         .HasColumnType("real");
 
                     b.Property<float>("WindSpeed")

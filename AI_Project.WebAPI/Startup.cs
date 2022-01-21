@@ -39,6 +39,7 @@ namespace AI_Project.WebAPI
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ElectricityConsumption.WebAPI", Version = "v1" });
             });
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -48,7 +49,7 @@ namespace AI_Project.WebAPI
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            app.UseCors(opt => opt.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod());
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ElectricityConsumption.WebAPI v1"));
 

@@ -24,7 +24,6 @@ namespace AI_Project.Persistence.Repositories
                     if (item.ElectricSpending > 0)
                     {
                         _dataContext.Data.Add(item);
-
                     }
                     else
                     {
@@ -35,14 +34,19 @@ namespace AI_Project.Persistence.Repositories
                 {
                     string r = e.Message;
                 }
+                _dataContext.SaveChanges();
 
             }
-            _dataContext.SaveChanges();
         }
 
         public IEnumerable<Weather> GetData()
         {
             return _dataContext.Data.ToList();
+        }
+
+        public IEnumerable<Weather> GetDataForPrediction()
+        {
+            return _dataContext.Data.Where(data => data.ElectricSpending == -1).ToList();
         }
     }
 }

@@ -22,16 +22,40 @@ namespace AI_Project.WebAPI.Controllers
 
 
         [HttpPost]
-        public void PostData([FromForm] ExcelModel file)
+        public async Task<ActionResult<bool>> PostData([FromForm] ExcelModel file)
         {
-            _dataService.ImportExcel(file);
+            await _dataService.ImportExcel(file, false);
+            return true;
+        }
+
+        [HttpPost]
+        [Route("PostPredictData")]
+        public async Task<ActionResult<bool>> PostPredictData([FromForm] ExcelModel file)
+        {
+            await _dataService.ImportExcel(file, true);
+            return true;
         }
 
         //GET: api/Data
         [HttpGet]
-        public void GetData()
+        public async Task<ActionResult<bool>> GetData()
         {
-            _dataService.StartTraining();
+            await _dataService.StartTraining();
+            return Ok(true);
         }
+
+        //[HttpGet]
+        //public async Task<ActionResult<string>> Predict(DateTime startData, int numDays)
+        //{
+
+        //    return Ok("data");
+        //}
+
+        //[HttpGet]
+        //public async Task<ActionResult> ExportToCSV(string data)
+        //{
+
+        //    return Ok();
+        //}
     }
 }

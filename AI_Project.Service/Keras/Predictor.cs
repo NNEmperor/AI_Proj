@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace AI_Project.Service.Keras
 {
@@ -12,7 +13,7 @@ namespace AI_Project.Service.Keras
     {
         private const float frac = 0.9f;
 
-        public void Predict(List<Weather> weathers)
+        public async Task Train(List<Weather> weathers)
         {
             var trainingData = GetTrainingData(weathers);
             var predictorData = trainingData.Item1;
@@ -22,42 +23,43 @@ namespace AI_Project.Service.Keras
             int trainCnt = (int)Math.Round((cnt * frac), 0);
             ANNTrainingOptions trainingOptions = new ANNTrainingOptions();
 
-            trainingOptions.PredictorVariablesTraining = predictorData.Take(trainCnt).ToList();
-            trainingOptions.PredictorVariablesTest = predictorData.Skip(trainCnt).ToList();
+            trainingOptions.PredictorVariablesTraining = predictorData;
+            //trainingOptions.PredictorVariablesTest = new;
 
 
-            trainingOptions.PredictedVariablesTraining = predictedData.Take(trainCnt).ToList();
-            List<float> predictedVariablesTest = predictedData.Skip(trainCnt).ToList();
+            trainingOptions.PredictedVariablesTraining = predictedData;
+            //List<float> predictedVariablesTest = predictedData.Skip(trainCnt).ToList();
             ANNExecutor annExecutor = new ANNExecutor();
             var results = annExecutor.Run(trainingOptions);
 
-            List<float> l1 = new List<float>();
-            List<float> l2 = new List<float>();
-            foreach (var item in results.PredictedValues)
-            {
-                l1.Add(item * (ServiceClass.loadMax - ServiceClass.loadMin) + ServiceClass.loadMin);
-            }
-            foreach (var item in predictedVariablesTest)
-            {
-                l2.Add(item * (ServiceClass.loadMax - ServiceClass.loadMin) + ServiceClass.loadMin);
-            }
+            //List<float> l1 = new List<float>();
+            //List<float> l2 = new List<float>();
+            //foreach (var item in results.PredictedValues)
+            //{
+            //    l1.Add(item * (ServiceClass.loadMax - ServiceClass.loadMin) + ServiceClass.loadMin);
+            //}
+            //foreach (var item in predictedVariablesTest)
+            //{
+            //    l2.Add(item * (ServiceClass.loadMax - ServiceClass.loadMin) + ServiceClass.loadMin);
+            //}
 
-            double sqrDeviation = GetSquareDeviation(results.PredictedValues, predictedVariablesTest);
-            float sum = 0;
-            for (int i = 0; i < results.PredictedValues.Count; i++)
-            {
-                sum += Math.Abs((l2[i] - l1[i]) / (l2[i]));
-            }
+            //double sqrDeviation = GetSquareDeviation(results.PredictedValues, predictedVariablesTest);
+            //float sum = 0;
+            //for (int i = 0; i < results.PredictedValues.Count; i++)
+            //{
+            //    sum += Math.Abs((l2[i] - l1[i]) / (l2[i]));
+            //}
 
-            float s = (sum / results.PredictedValues.Count) * 100;
+            //float s = (sum / results.PredictedValues.Count) * 100;
 
-            Console.WriteLine("SQR Deviation: " + sqrDeviation.ToString());
+            //Console.WriteLine("SQR Deviation: " + sqrDeviation.ToString());
         }
 
         private Tuple<List<List<float>>, List<float>> GetTrainingData(List<Weather> weathers)
         {
             List<List<float>> predictorData = new List<List<float>>();
             List<float> predictedData = new List<float>();
+
             foreach (Weather w in weathers)
             {
                 List<float> rowValues = new List<float>();
@@ -68,6 +70,7 @@ namespace AI_Project.Service.Keras
                 rowValues.Add(w.Humidity);
                 rowValues.Add(w.MonthOfTheYear);
                 rowValues.Add(w.DayOfTheWeek);
+                rowValues.Add(w.TimeOfDay);
 
                 predictedData.Add(w.ElectricSpending);
                 predictorData.Add(rowValues);
@@ -87,6 +90,11 @@ namespace AI_Project.Service.Keras
                 deviations.Add(Math.Pow((float)(new decimal(l1[i])) - (float)(new decimal(l2[i])), 2));
             }
             return Math.Sqrt(deviations.Average());
+        }
+
+        public async Task Predict(List<Weather> weathers)
+        {
+
         }
     }
 }

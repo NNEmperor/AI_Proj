@@ -2,12 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace AI_Project.Domain.Interfaces
 {
     public interface IService
     {
-        void ImportExcel(ExcelModel filemodel);
-        void StartTraining();
+        Task ImportExcel(ExcelModel filemodel, bool isPredictData);
+        Task StartTraining();
+        Task PredictLoad(DateTime startDate, int numOfDays);
+        Task ExportToCSV(string data);
     }
 }

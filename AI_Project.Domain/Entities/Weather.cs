@@ -17,5 +17,6 @@ namespace AI_Project.Domain.Entities
         public float ElectricSpending { get; set; }
         public float DayOfTheWeek { get; set; }
         public float MonthOfTheYear { get; set; }
+        public float TimeOfDay { get; set; }
     }
 }

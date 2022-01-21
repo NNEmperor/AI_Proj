@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace AI_Project.Service
 {
@@ -33,7 +34,7 @@ namespace AI_Project.Service
         }
 
 
-        public void ImportExcel(ExcelModel filemodel)
+        public async Task ImportExcel(ExcelModel filemodel, bool isPredictData)
         {
             string path = Path.Combine(Directory.GetCurrentDirectory(), "Data", filemodel.FileName);
             using (Stream stream = new FileStream(path, FileMode.Create))
@@ -62,63 +63,72 @@ namespace AI_Project.Service
                 }
             }
 
-            using (ExcelPackage package = new ExcelPackage(existingFile))
+            if (!isPredictData)
             {
-                ExcelWorksheet worksheet = package.Workbook.Worksheets[6];
-                int colCount = worksheet.Dimension.End.Column;  //get Column Count
-                int rowCount = worksheet.Dimension.End.Row;     //get row count
-                for (int row = 2; row <= rowCount; row++)
+                using (ExcelPackage package = new ExcelPackage(existingFile))
                 {
-                    if (row == 14)
+                    ExcelWorksheet worksheet = package.Workbook.Worksheets[6];
+                    int colCount = worksheet.Dimension.End.Column;  //get Column Count
+                    int rowCount = worksheet.Dimension.End.Row;     //get row count
+                    for (int row = 2; row <= rowCount; row++)
                     {
-                        int a = 0;
-                    }
-                    string date = worksheet.Cells[row, 1].Value.ToString().Split(' ')[0];
-                    string time = "";
-                    string[] t = worksheet.Cells[row, 2].Value.ToString().Split(' ');
-                    if (t[2] == "AM" && t[1] == "12:00:00")
-                    {
-                        time = "00:00";
-                    }
-                    else
-                    {
-                        if (t[1].Split(':')[0].Length == 1)
+                        if (row == 14)
                         {
-                            time = worksheet.Cells[row, 2].Value.ToString().Split(' ')[1].Substring(0, 4);
-                            time = "0" + time;
+                            int a = 0;
+                        }
+                        string date = worksheet.Cells[row, 1].Value.ToString().Split(' ')[0];
+                        string time = "";
+                        string[] t = worksheet.Cells[row, 2].Value.ToString().Split(' ');
+                        if (t[2] == "AM" && t[1] == "12:00:00")
+                        {
+                            time = "00:00";
                         }
                         else
                         {
-                            time = worksheet.Cells[row, 2].Value.ToString().Split(' ')[1].Substring(0, 5);
+                            if (t[1].Split(':')[0].Length == 1)
+                            {
+                                time = worksheet.Cells[row, 2].Value.ToString().Split(' ')[1].Substring(0, 4);
+                                time = "0" + time;
+                            }
+                            else
+                            {
+                                time = worksheet.Cells[row, 2].Value.ToString().Split(' ')[1].Substring(0, 5);
+                            }
+                            if (t[2] == "PM" && time.Split(':')[0] != "12")
+                            {
+                                int temp = Int32.Parse(time.Split(':')[0]);
+                                temp += 12;
+                                time = $"{temp}:00";
+                            }
+
                         }
-                        if (t[2] == "PM" && time.Split(':')[0] != "12")
+                        float load = float.Parse(worksheet.Cells[row, 4].Value.ToString(), CultureInfo.InvariantCulture);
+                        string day = date.Split('/')[1];
+                        string month = date.Split('/')[0];
+                        string year = date.Split('/')[2];
+                        if (Int32.Parse(day) < 10)
                         {
-                            int temp = Int32.Parse(time.Split(':')[0]);
-                            temp += 12;
-                            time = $"{temp}:00";
+                            day = $"0{day}";
+                        }
+                        if (Int32.Parse(month) < 10)
+                        {
+                            month = $"0{month}";
+                        }
+                        string dateAndTime = $"{month}/{day}/{year} {time}";
+                        DateTime dateTime = DateTime.ParseExact(dateAndTime, "MM/dd/yyyy HH:mm", CultureInfo.InvariantCulture);
+                        if (data.ContainsKey(dateTime))
+                        {
+                            data[dateTime].ElectricSpending = load;
                         }
 
                     }
-
-                    float load = float.Parse(worksheet.Cells[row, 4].Value.ToString(), CultureInfo.InvariantCulture);
-                    string day = date.Split('/')[1];
-                    string month = date.Split('/')[0];
-                    string year = date.Split('/')[2];
-                    if (Int32.Parse(day) < 10)
-                    {
-                        day = $"0{day}";
-                    }
-                    if (Int32.Parse(month) < 10)
-                    {
-                        month = $"0{month}";
-                    }
-                    string dateAndTime = $"{month}/{day}/{year} {time}";
-                    DateTime dateTime = DateTime.ParseExact(dateAndTime, "MM/dd/yyyy HH:mm", CultureInfo.InvariantCulture);
-                    if (data.ContainsKey(dateTime))
-                    {
-                        data[dateTime].ElectricSpending = load;
-                    }
-
+                }
+            }
+            else
+            {
+                foreach(Weather w in data.Values)
+                {
+                    w.ElectricSpending = -1;
                 }
             }
             _weatherRepository.AddData(data.Values);
@@ -192,19 +202,24 @@ namespace AI_Project.Service
 
             entity.DayOfTheWeek = ((float)entity.DateTimeOfMeasurement.DayOfWeek);
             entity.MonthOfTheYear = entity.DateTimeOfMeasurement.Month;
+            entity.TimeOfDay = entity.DateTimeOfMeasurement.TimeOfDay.Hours;
 
             return entity;
         }
 
-        public void StartTraining()
+        public async Task StartTraining()
         {
             Predictor predictor = new Predictor();
-            predictor.Predict(GetScaledData());
+            await predictor.Train(GetScaledData(false));
         }
 
-        private List<Weather> GetScaledData()
+        private List<Weather> GetScaledData(bool isForPrediction)
         {
-            List<Weather> normalValues = _weatherRepository.GetData().ToList();
+            List<Weather> normalValues = new List<Weather>();
+            if (!isForPrediction)
+                normalValues = _weatherRepository.GetData().ToList();
+            else
+                normalValues = _weatherRepository.GetDataForPrediction().ToList();
             List<Weather> scaledValues = new List<Weather>();
 
             loadMax = normalValues.Max(w => w.ElectricSpending);
@@ -216,8 +231,15 @@ namespace AI_Project.Service
             windSpeedMax = normalValues.Max(w => w.WindSpeed);
             windSpeedMin = normalValues.Min(w => w.WindSpeed);
 
+            float day = -1;
             foreach (Weather weather in normalValues)
             {
+                if ((weather.Temperature <= -5.2 || weather.Temperature >= 15.7) || day == weather.DayOfTheWeek)
+                {
+                    day = weather.DayOfTheWeek;
+                    continue;
+                }
+                day = -1;
                 Weather scaledWeather = new Weather
                 {
                     DateTimeOfMeasurement = weather.DateTimeOfMeasurement,
@@ -229,7 +251,8 @@ namespace AI_Project.Service
                     WindSpeed = (weather.WindSpeed - windSpeedMin) / (windSpeedMax - windSpeedMin),
 
                     DayOfTheWeek = weather.DayOfTheWeek / 6,
-                    MonthOfTheYear = (weather.MonthOfTheYear - 1) / 11
+                    MonthOfTheYear = (weather.MonthOfTheYear - 1) / 11,
+                    TimeOfDay = weather.TimeOfDay / 23
                 };
 
 
@@ -237,6 +260,31 @@ namespace AI_Project.Service
             }
 
             return scaledValues;
+        }
+
+        public async Task ExportToCSV(string data)
+        {
+            var csv = new StringBuilder();
+            string path = "some path";
+
+            for (int i =0;i<2;i++)
+            {
+                //logic for each data
+                string data1 = "sklj";
+                string data2 = "uopa";
+                string newLine = string.Format("{0},{1}", data1, data2);
+                csv.AppendLine(newLine); //only part
+            }
+
+            File.WriteAllText(path, csv.ToString());
+        }
+
+        public async Task PredictLoad(DateTime startDate, int numOfDays)
+        {
+            //read model from json
+
+            Predictor predictor = new Predictor();
+            await predictor.Train(GetScaledData(true));
         }
     }
 }

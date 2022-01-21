@@ -40,7 +40,7 @@ namespace AI_Project.Service.Keras.AnnExecute
             //try
             //{
             modelTraining.Fit(ndPredictorData, ndPredictedData, epochs: this.EpochNumber, batch_size: this.BatchSize, verbose: this.Verbose);
-
+            
             //}
             //catch(Exception e)
             //{
@@ -52,7 +52,7 @@ namespace AI_Project.Service.Keras.AnnExecute
         private Sequential GetSequentialModel()
         {
             var modelTraining = new Sequential();
-            if (this.NumberOfHiddenLayers > 0)
+            if (this.NumberOfHiddenLayers > 0) //ovde puca nekad random od x treninga
                 modelTraining.Add(new Dense(this.NumberOfNeuronsInFirstHiddenLayer, input_dim: this.InputDim, kernel_initializer: this.KernelInitializer, activation: this.ActivationFunction));
             if (this.NumberOfHiddenLayers > 1)
             {

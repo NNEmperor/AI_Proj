@@ -7,15 +7,15 @@ namespace AI_Project.Service.Keras.Options
     public class ANNTrainingOptions
     {
 
-        private const int BATCH_SIZE_NUMBER = 50;
-        private const int EPOCH_NUMBER = 1000;
+        private const int BATCH_SIZE_NUMBER = 1;
+        private const int EPOCH_NUMBER = 400;
         private const string COST_FUNCTION = "mean_absolute_error";
         private const string OPTIMIZER = "adam";
         private const string KERNEL_INITIALIZER = "normal";
         private const string ACTIVATION_FUNCTION = "sigmoid";
         private const int NUMBER_OF_HIDDEN_LAYERS = 5;
-        private const int NUMBER_OF_NEURONS_IN_FIRST_HIDDEN_LAYER = 8;
-        private const int NUMBER_OF_NEURONS_IN_OTHER_HIDDEN_LAYERS = 6;
+        private const int NUMBER_OF_NEURONS_IN_FIRST_HIDDEN_LAYER = 10;
+        private const int NUMBER_OF_NEURONS_IN_OTHER_HIDDEN_LAYERS = 8;
         private const int VERBOSE = 2;
         private int inputDim = 0;
 

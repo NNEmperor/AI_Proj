@@ -47,6 +47,9 @@ namespace AI_Project.Persistence.Migrations
                     b.Property<float>("Temperature")
                         .HasColumnType("real");
 
+                    b.Property<float>("TimeOfDay")
+                        .HasColumnType("real");
+
                     b.Property<float>("WindSpeed")
                         .HasColumnType("real");
 

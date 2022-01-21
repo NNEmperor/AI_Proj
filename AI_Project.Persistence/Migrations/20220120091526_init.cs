@@ -20,7 +20,8 @@ namespace AI_Project.Persistence.Migrations
                     WindSpeed = table.Column<float>(nullable: false),
                     ElectricSpending = table.Column<float>(nullable: false),
                     DayOfTheWeek = table.Column<float>(nullable: false),
-                    MonthOfTheYear = table.Column<float>(nullable: false)
+                    MonthOfTheYear = table.Column<float>(nullable: false),
+                    TimeOfDay = table.Column<float>(nullable: false)
                 },
                 constraints: table =>
                 {
