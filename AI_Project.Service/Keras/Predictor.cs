@@ -21,16 +21,55 @@ namespace AI_Project.Service.Keras
 
             int cnt = predictedData.Count;
             int trainCnt = (int)Math.Round((cnt * frac), 0);
-            ANNTrainingOptions trainingOptions = new ANNTrainingOptions();
+            var trainingOptions = new ANNTrainingOptions();
 
-            trainingOptions.PredictorVariablesTraining = predictorData;
-            //trainingOptions.PredictorVariablesTest = new;
+            trainingOptions.PredictorVariablesTraining = predictorData.Take(trainCnt).ToList();
+            trainingOptions.PredictorVariablesTest = predictorData.Skip(trainCnt).ToList();
 
 
-            trainingOptions.PredictedVariablesTraining = predictedData;
-            //List<float> predictedVariablesTest = predictedData.Skip(trainCnt).ToList();
+            trainingOptions.PredictedVariablesTraining = predictedData.Take(trainCnt).ToList();
+            List<float> predictedVariablesTest = predictedData.Skip(trainCnt).ToList();
             ANNExecutor annExecutor = new ANNExecutor();
             var results = annExecutor.Run(trainingOptions);
+
+            List<float> l1 = new List<float>();
+            List<float> l2 = new List<float>();
+            foreach (var item in results.PredictedValues)
+            {
+                l1.Add(item * (ServiceClass.loadMax - ServiceClass.loadMin) + ServiceClass.loadMin);
+            }
+            foreach (var item in predictedVariablesTest)
+            {
+                l2.Add(item * (ServiceClass.loadMax - ServiceClass.loadMin) + ServiceClass.loadMin);
+            }
+
+            double sqrDeviation = GetSquareDeviation(results.PredictedValues, predictedVariablesTest);
+            float sum = 0;
+            for (int i = 0; i < results.PredictedValues.Count; i++)
+            {
+                sum += Math.Abs((l2[i] - l1[i]) / (l2[i]));
+            }
+
+            float s = (sum / results.PredictedValues.Count) * 100;
+
+            Console.WriteLine("SQR Deviation: " + sqrDeviation.ToString());
+        }
+
+        public async Task<Dictionary<DateTime, float>> Predict(List<Weather> weathers)
+        {
+            var returnValue = new Dictionary<DateTime, float>();
+
+            var trainingData = GetTrainingData(weathers);
+            var predictorData = trainingData.Item1;
+            var predictedData = trainingData.Item2;
+
+            var trainingOptions = new ANNTrainingOptions();
+
+            trainingOptions.PredictorVariablesTest = predictorData;
+            //List<float> predictedVariablesTest = predictedData;
+
+            ANNExecutor annExecutor = new ANNExecutor();
+            var results = annExecutor.Predict(trainingOptions);
 
             //List<float> l1 = new List<float>();
             //List<float> l2 = new List<float>();
@@ -53,6 +92,17 @@ namespace AI_Project.Service.Keras
             //float s = (sum / results.PredictedValues.Count) * 100;
 
             //Console.WriteLine("SQR Deviation: " + sqrDeviation.ToString());
+
+            //return s.ToString();
+
+            int i = 0;
+            foreach(Weather w in weathers)
+            {
+                returnValue.Add(w.DateTimeOfMeasurement, results.PredictedValues[i]);
+                i++;
+            }
+
+            return returnValue;
         }
 
         private Tuple<List<List<float>>, List<float>> GetTrainingData(List<Weather> weathers)
@@ -92,9 +142,5 @@ namespace AI_Project.Service.Keras
             return Math.Sqrt(deviations.Average());
         }
 
-        public async Task Predict(List<Weather> weathers)
-        {
-
-        }
     }
 }

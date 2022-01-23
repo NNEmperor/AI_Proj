@@ -19,7 +19,17 @@ namespace AI_Project.Service.Keras.AnnExecute
             ANNRegressionModelFactory factory = new ANNRegressionModelFactory(trainingOptions);
             var model = factory.GetModel();
             ExportToJson(model);
-            BaseModel newModel = BaseModel.ModelFromJson(GetJson());
+            model.SaveWeight(@"C:\Users\Nikola\Desktop\AI_NN\AI_Proj\AI_Project.Service\Keras\Data\test.h5");
+            var predictedValue = model.Predict(np.array(GetPredictorVariables(trainingOptions.PredictorVariablesTest, trainingOptions.PredictorVariablesTest.Count, trainingOptions.PredictorVariablesTest[0].Count))).astype(np.float32);
+            results.PredictedValues = ToList(predictedValue);
+            return results;
+        }
+
+        public ANNResults Predict(ANNTrainingOptions trainingOptions)
+        {
+            ANNResults results = new ANNResults();
+            BaseModel newModel = BaseModel.ModelFromJson(File.ReadAllText(@"C:\Users\Nikola\Desktop\AI_NN\AI_Proj\AI_Project.Service\Keras\Data\test.json"));
+            newModel.LoadWeight(@"C:\Users\Nikola\Desktop\AI_NN\AI_Proj\AI_Project.Service\Keras\Data\test.h5");
             var predictedValue = newModel.Predict(np.array(GetPredictorVariables(trainingOptions.PredictorVariablesTest, trainingOptions.PredictorVariablesTest.Count, trainingOptions.PredictorVariablesTest[0].Count))).astype(np.float32);
             results.PredictedValues = ToList(predictedValue);
             return results;
@@ -58,40 +68,16 @@ namespace AI_Project.Service.Keras.AnnExecute
             return predVariables;
         }
 
-        private float[] ToArray(List<float> valuesList)
-        {
-            float[] arr = new float[valuesList.Count];
-            for (int i = 0; i < valuesList.Count; i++)
-            {
-                arr[i] = valuesList[i];
-            }
-            return arr;
-        }
-
         private void ExportToJson(BaseModel model)
         {
             string jsonModel = model.ToJson();
-            string path = @"C:\Users\nikola.nikolic\Desktop\Faks\AI\AI_Project_NN\AI_Project.Service\Keras\Data\test.json";
+            string path = @"C:\Users\Nikola\Desktop\AI_NN\AI_Proj\AI_Project.Service\Keras\Data\test.json";
 
             using(var tw = new StreamWriter(path, true))
             {
                 tw.Write(jsonModel);
                 tw.Close();
             }
-        }
-
-        private string GetJson()
-        {
-            string jsonString;
-            string path = @"C:\Users\nikola.nikolic\Desktop\Faks\AI\AI_Project_NN\AI_Project.Service\Keras\Data\test.json";
-
-            using (var tw = new StreamReader(path, true))
-            {
-                jsonString = tw.ReadLine();
-                tw.Close();
-            }
-
-            return jsonString;
         }
     }
 }

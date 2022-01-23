@@ -44,18 +44,18 @@ namespace AI_Project.WebAPI.Controllers
             return Ok(true);
         }
 
-        //[HttpGet]
-        //public async Task<ActionResult<string>> Predict(DateTime startData, int numDays)
-        //{
+        [HttpGet]
+        public async Task<ActionResult<string>> Predict(DateTime startDate, DateTime endDate)
+        {
+            string result = await _dataService.PredictLoad(startDate, endDate);
+            return Ok(result);
+        }
 
-        //    return Ok("data");
-        //}
-
-        //[HttpGet]
-        //public async Task<ActionResult> ExportToCSV(string data)
-        //{
-
-        //    return Ok();
-        //}
+        [HttpGet]
+        public async Task<ActionResult> ExportToCSV()
+        {
+            await _dataService.ExportToCSV();
+            return Ok();
+        }
     }
 }

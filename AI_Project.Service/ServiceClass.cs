@@ -18,6 +18,7 @@ namespace AI_Project.Service
     {
         private float _lastCloudnes = 100;
         private readonly IWeatherRepository _weatherRepository;
+        private static Dictionary<DateTime, float> predictedValues = new Dictionary<DateTime, float>();
 
         public static float loadMax;
         public static float loadMin;
@@ -72,10 +73,6 @@ namespace AI_Project.Service
                     int rowCount = worksheet.Dimension.End.Row;     //get row count
                     for (int row = 2; row <= rowCount; row++)
                     {
-                        if (row == 14)
-                        {
-                            int a = 0;
-                        }
                         string date = worksheet.Cells[row, 1].Value.ToString().Split(' ')[0];
                         string time = "";
                         string[] t = worksheet.Cells[row, 2].Value.ToString().Split(' ');
@@ -210,16 +207,16 @@ namespace AI_Project.Service
         public async Task StartTraining()
         {
             Predictor predictor = new Predictor();
-            await predictor.Train(GetScaledData(false));
+            await predictor.Train(GetScaledData(false, new DateTime(), new DateTime()));
         }
 
-        private List<Weather> GetScaledData(bool isForPrediction)
+        private List<Weather> GetScaledData(bool isForPrediction, DateTime startDate, DateTime endDate)
         {
             List<Weather> normalValues = new List<Weather>();
             if (!isForPrediction)
                 normalValues = _weatherRepository.GetData().ToList();
             else
-                normalValues = _weatherRepository.GetDataForPrediction().ToList();
+                normalValues = _weatherRepository.GetDataForPrediction(startDate, endDate).ToList();
             List<Weather> scaledValues = new List<Weather>();
 
             loadMax = normalValues.Max(w => w.ElectricSpending);
@@ -262,16 +259,16 @@ namespace AI_Project.Service
             return scaledValues;
         }
 
-        public async Task ExportToCSV(string data)
+        public async Task ExportToCSV()
         {
             var csv = new StringBuilder();
-            string path = "some path";
+            string path = "C:\Users\Nikola\Desktop\AI_NN\AI_Proj\AI_Project.Service\Keras\Data\results.csv";
 
-            for (int i =0;i<2;i++)
+            foreach(DateTime date in predictedValues.Keys)
             {
                 //logic for each data
-                string data1 = "sklj";
-                string data2 = "uopa";
+                string data1 = date.ToString();
+                string data2 = predictedValues[date].ToString();
                 string newLine = string.Format("{0},{1}", data1, data2);
                 csv.AppendLine(newLine); //only part
             }
@@ -279,12 +276,11 @@ namespace AI_Project.Service
             File.WriteAllText(path, csv.ToString());
         }
 
-        public async Task PredictLoad(DateTime startDate, int numOfDays)
+        public async Task<string> PredictLoad(DateTime startDate, DateTime endDate)
         {
-            //read model from json
-
             Predictor predictor = new Predictor();
-            await predictor.Train(GetScaledData(true));
+            predictedValues = await predictor.Predict(GetScaledData(true, startDate, endDate));
+            return predictedValues.ToString();
         }
     }
 }
