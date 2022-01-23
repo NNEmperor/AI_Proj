@@ -262,7 +262,7 @@ namespace AI_Project.Service
         public async Task ExportToCSV()
         {
             var csv = new StringBuilder();
-            string path = "C:\Users\Nikola\Desktop\AI_NN\AI_Proj\AI_Project.Service\Keras\Data\results.csv";
+            string path = @"C:\Users\Nikola\Desktop\AI_NN\AI_Proj\AI_Project.Service\Keras\Data\results.csv";
 
             foreach(DateTime date in predictedValues.Keys)
             {
