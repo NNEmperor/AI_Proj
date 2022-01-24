@@ -45,7 +45,7 @@ namespace AI_Project.Persistence.Repositories
 
         public IEnumerable<Weather> GetDataForPrediction(DateTime startDate, DateTime endDate)
         {
-            return _dataContext.Data.Where(data => data.ElectricSpending == -1 &&
+            return _dataContext.Data.Where(data => /*data.ElectricSpending == -1 &&*/
             DateTime.Compare(data.DateTimeOfMeasurement, startDate) >= 0 && 
             DateTime.Compare(data.DateTimeOfMeasurement, endDate) <= 0)
                 .ToList();

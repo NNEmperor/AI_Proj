@@ -1,4 +1,5 @@
 ﻿using AI_Project.Domain.Entities;
+using AI_Project.Domain.Models;
 using AI_Project.Service.Keras.AnnExecute;
 using AI_Project.Service.Keras.Options;
 using System;
@@ -55,9 +56,10 @@ namespace AI_Project.Service.Keras
             Console.WriteLine("SQR Deviation: " + sqrDeviation.ToString());
         }
 
-        public async Task<Dictionary<DateTime, float>> Predict(List<Weather> weathers)
+        public List<ReturnModel> Predict(List<Weather> weathers)
         {
-            var returnValue = new Dictionary<DateTime, float>();
+            var returnValue = new List<ReturnModel>();
+            var resultsReal = new List<float>();
 
             var trainingData = GetTrainingData(weathers);
             var predictorData = trainingData.Item1;
@@ -73,10 +75,10 @@ namespace AI_Project.Service.Keras
 
             //List<float> l1 = new List<float>();
             //List<float> l2 = new List<float>();
-            //foreach (var item in results.PredictedValues)
-            //{
-            //    l1.Add(item * (ServiceClass.loadMax - ServiceClass.loadMin) + ServiceClass.loadMin);
-            //}
+            foreach (var item in results.PredictedValues)
+            {
+                resultsReal.Add(item * (ServiceClass.loadMax - ServiceClass.loadMin) + ServiceClass.loadMin);
+            }
             //foreach (var item in predictedVariablesTest)
             //{
             //    l2.Add(item * (ServiceClass.loadMax - ServiceClass.loadMin) + ServiceClass.loadMin);
@@ -98,7 +100,7 @@ namespace AI_Project.Service.Keras
             int i = 0;
             foreach(Weather w in weathers)
             {
-                returnValue.Add(w.DateTimeOfMeasurement, results.PredictedValues[i]);
+                returnValue.Add(new ReturnModel() { Time = w.DateTimeOfMeasurement.ToString(), Value = resultsReal[i].ToString() });
                 i++;
             }
 

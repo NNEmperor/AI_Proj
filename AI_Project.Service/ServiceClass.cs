@@ -18,7 +18,7 @@ namespace AI_Project.Service
     {
         private float _lastCloudnes = 100;
         private readonly IWeatherRepository _weatherRepository;
-        private static Dictionary<DateTime, float> predictedValues = new Dictionary<DateTime, float>();
+        private static List<ReturnModel> predictedValues = new List<ReturnModel>();
 
         public static float loadMax;
         public static float loadMin;
@@ -262,13 +262,13 @@ namespace AI_Project.Service
         public async Task ExportToCSV()
         {
             var csv = new StringBuilder();
-            string path = @"C:\Users\Nikola\Desktop\AI_NN\AI_Proj\AI_Project.Service\Keras\Data\results.csv";
+            string path = @"C:\Users\nikola.nikolic\Desktop\Faks\AI\AI_Project_NN\AI_Project.Service\Keras\Data\results.csv";
 
-            foreach(DateTime date in predictedValues.Keys)
+            foreach(ReturnModel model in predictedValues)
             {
                 //logic for each data
-                string data1 = date.ToString();
-                string data2 = predictedValues[date].ToString();
+                string data1 = model.Time.ToString();
+                string data2 = model.Value.ToString();
                 string newLine = string.Format("{0},{1}", data1, data2);
                 csv.AppendLine(newLine); //only part
             }
@@ -276,11 +276,11 @@ namespace AI_Project.Service
             File.WriteAllText(path, csv.ToString());
         }
 
-        public async Task<string> PredictLoad(DateTime startDate, DateTime endDate)
+        public List<ReturnModel> PredictLoad(DateTime startDate, DateTime endDate)
         {
             Predictor predictor = new Predictor();
-            predictedValues = await predictor.Predict(GetScaledData(true, startDate, endDate));
-            return predictedValues.ToString();
+            predictedValues = predictor.Predict(GetScaledData(true, startDate, endDate));
+            return predictedValues;
         }
     }
 }
