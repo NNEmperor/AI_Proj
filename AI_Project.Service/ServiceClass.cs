@@ -17,8 +17,10 @@ namespace AI_Project.Service
     public class ServiceClass : IService
     {
         private float _lastCloudnes = 100;
+        private float _lastWindSpeed = 0;
+        private float _lastHumidity = 0;
         private readonly IWeatherRepository _weatherRepository;
-        private static Dictionary<DateTime, float> predictedValues = new Dictionary<DateTime, float>();
+        private static List<ReturnModel> predictedValues = new List<ReturnModel>();
 
         public static float loadMax;
         public static float loadMin;
@@ -157,19 +159,21 @@ namespace AI_Project.Service
             if (worksheet.Cells[row, 6].Value != null)
             {
                 entity.Humidity = float.Parse(worksheet.Cells[row, 6].Value?.ToString());
+                _lastHumidity = entity.Humidity;
             }
             else
             {
-                return null;
+                entity.Humidity = _lastHumidity;
             }
 
             if (worksheet.Cells[row, 8].Value != null)
             {
                 entity.WindSpeed = float.Parse(worksheet.Cells[row, 8].Value?.ToString());
+                _lastWindSpeed = entity.WindSpeed;
             }
             else
             {
-                return null;
+                entity.WindSpeed = _lastWindSpeed;
             }
             string cell = worksheet.Cells[row, 11].Value?.ToString();
 
@@ -177,24 +181,20 @@ namespace AI_Project.Service
             {
                 entity.Cloudiness = _lastCloudnes;
             }
-            else if (cell == "no clouds")
-            {
-                entity.Cloudiness = 0;
-                _lastCloudnes = entity.Cloudiness;
-            }
             else
             {
                 string resultString = Regex.Match(cell, @"\d+").Value;
-                try
-                {
-                    entity.Cloudiness = float.Parse(resultString);
-                    _lastCloudnes = entity.Cloudiness;
-                }
-                catch
-                {
-                    return null;
-                }
 
+                float temp = 0;
+                float.TryParse(resultString, out temp);
+                if (temp == 0)
+                    entity.Cloudiness = _lastCloudnes;
+                else
+                {
+                    _lastCloudnes = temp;
+                    entity.Cloudiness = temp;
+                }
+            
             }
 
             entity.DayOfTheWeek = ((float)entity.DateTimeOfMeasurement.DayOfWeek);
@@ -231,12 +231,15 @@ namespace AI_Project.Service
             float day = -1;
             foreach (Weather weather in normalValues)
             {
-                if ((weather.Temperature <= -5.2 || weather.Temperature >= 15.7) || day == weather.DayOfTheWeek)
+                if (!isForPrediction)
                 {
-                    day = weather.DayOfTheWeek;
-                    continue;
+                    if ((weather.Temperature <= -5.2 || weather.Temperature >= 15.7) || day == weather.DayOfTheWeek)
+                    {
+                        day = weather.DayOfTheWeek;
+                        continue;
+                    }
+                    day = -1;
                 }
-                day = -1;
                 Weather scaledWeather = new Weather
                 {
                     DateTimeOfMeasurement = weather.DateTimeOfMeasurement,
@@ -264,11 +267,11 @@ namespace AI_Project.Service
             var csv = new StringBuilder();
             string path = @"C:\Users\Nikola\Desktop\AI_NN\AI_Proj\AI_Project.Service\Keras\Data\results.csv";
 
-            foreach(DateTime date in predictedValues.Keys)
+            foreach(ReturnModel model in predictedValues)
             {
                 //logic for each data
-                string data1 = date.ToString();
-                string data2 = predictedValues[date].ToString();
+                string data1 = model.Time.ToString();
+                string data2 = model.Value.ToString();
                 string newLine = string.Format("{0},{1}", data1, data2);
                 csv.AppendLine(newLine); //only part
             }
@@ -276,11 +279,11 @@ namespace AI_Project.Service
             File.WriteAllText(path, csv.ToString());
         }
 
-        public async Task<string> PredictLoad(DateTime startDate, DateTime endDate)
+        public async Task<List<ReturnModel>> PredictLoad(DateTime startDate, DateTime endDate)
         {
             Predictor predictor = new Predictor();
             predictedValues = await predictor.Predict(GetScaledData(true, startDate, endDate));
-            return predictedValues.ToString();
+            return predictedValues;
         }
     }
 }

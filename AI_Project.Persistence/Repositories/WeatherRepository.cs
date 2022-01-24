@@ -21,14 +21,8 @@ namespace AI_Project.Persistence.Repositories
             {
                 try
                 {
-                    if (item.ElectricSpending > 0)
-                    {
-                        _dataContext.Data.Add(item);
-                    }
-                    else
-                    {
-                        var i = item;
-                    }
+                    _dataContext.Data.Add(item);
+
                 }
                 catch (Exception e)
                 {
@@ -36,6 +30,7 @@ namespace AI_Project.Persistence.Repositories
                 }
             }
             _dataContext.SaveChanges();
+
         }
 
         public IEnumerable<Weather> GetData()
@@ -45,9 +40,9 @@ namespace AI_Project.Persistence.Repositories
 
         public IEnumerable<Weather> GetDataForPrediction(DateTime startDate, DateTime endDate)
         {
-            return _dataContext.Data.Where(data => data.ElectricSpending == -1 &&
-            DateTime.Compare(data.DateTimeOfMeasurement, startDate) >= 0 && 
-            DateTime.Compare(data.DateTimeOfMeasurement, endDate) <= 0)
+            return _dataContext.Data.Where(data =>/* data.ElectricSpending == -1 &&*/
+            data.DateTimeOfMeasurement >= startDate &&
+            data.DateTimeOfMeasurement <= endDate)
                 .ToList();
         }
     }

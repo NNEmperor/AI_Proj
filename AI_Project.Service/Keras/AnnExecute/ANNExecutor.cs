@@ -19,17 +19,17 @@ namespace AI_Project.Service.Keras.AnnExecute
             ANNRegressionModelFactory factory = new ANNRegressionModelFactory(trainingOptions);
             var model = factory.GetModel();
             ExportToJson(model);
-            model.SaveWeight(@"C:\Users\Nikola\Desktop\AI_NN\AI_Proj\AI_Project.Service\Keras\Data\test.h5");
-            var predictedValue = model.Predict(np.array(GetPredictorVariables(trainingOptions.PredictorVariablesTest, trainingOptions.PredictorVariablesTest.Count, trainingOptions.PredictorVariablesTest[0].Count))).astype(np.float32);
-            results.PredictedValues = ToList(predictedValue);
+            model.SaveWeight(@"C:\Users\nikola.nikolic\Desktop\Faks\AI\AI_Project_NN\AI_Project.Service\Keras\Data\test2.h5");
+            //var predictedValue = model.Predict(np.array(GetPredictorVariables(trainingOptions.PredictorVariablesTest, trainingOptions.PredictorVariablesTest.Count, trainingOptions.PredictorVariablesTest[0].Count))).astype(np.float32);
+            //results.PredictedValues = ToList(predictedValue);
             return results;
         }
 
         public ANNResults Predict(ANNTrainingOptions trainingOptions)
         {
             ANNResults results = new ANNResults();
-            BaseModel newModel = BaseModel.ModelFromJson(File.ReadAllText(@"C:\Users\Nikola\Desktop\AI_NN\AI_Proj\AI_Project.Service\Keras\Data\test.json"));
-            newModel.LoadWeight(@"C:\Users\Nikola\Desktop\AI_NN\AI_Proj\AI_Project.Service\Keras\Data\test.h5");
+            BaseModel newModel = BaseModel.ModelFromJson(File.ReadAllText(@"C:\Users\nikola.nikolic\Desktop\Faks\AI\AI_Project_NN\AI_Project.Service\Keras\Data\test2.json"));
+            newModel.LoadWeight(@"C:\Users\nikola.nikolic\Desktop\Faks\AI\AI_Project_NN\AI_Project.Service\Keras\Data\test2.h5");
             var predictedValue = newModel.Predict(np.array(GetPredictorVariables(trainingOptions.PredictorVariablesTest, trainingOptions.PredictorVariablesTest.Count, trainingOptions.PredictorVariablesTest[0].Count))).astype(np.float32);
             results.PredictedValues = ToList(predictedValue);
             return results;
@@ -71,7 +71,7 @@ namespace AI_Project.Service.Keras.AnnExecute
         private void ExportToJson(BaseModel model)
         {
             string jsonModel = model.ToJson();
-            string path = @"C:\Users\Nikola\Desktop\AI_NN\AI_Proj\AI_Project.Service\Keras\Data\test.json";
+            string path = @"C:\Users\nikola.nikolic\Desktop\Faks\AI\AI_Project_NN\AI_Project.Service\Keras\Data\test2.json";
 
             using(var tw = new StreamWriter(path, true))
             {

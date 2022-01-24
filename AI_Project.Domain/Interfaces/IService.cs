@@ -10,7 +10,7 @@ namespace AI_Project.Domain.Interfaces
     {
         Task ImportExcel(ExcelModel filemodel, bool isPredictData);
         Task StartTraining();
-        Task<string> PredictLoad(DateTime startDate, DateTime endDate);
+        Task<List<ReturnModel>> PredictLoad(DateTime startDate, DateTime endDate);
         Task ExportToCSV();
     }
 }

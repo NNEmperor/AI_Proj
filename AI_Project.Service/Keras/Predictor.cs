@@ -1,4 +1,5 @@
 ﻿using AI_Project.Domain.Entities;
+using AI_Project.Domain.Models;
 using AI_Project.Service.Keras.AnnExecute;
 using AI_Project.Service.Keras.Options;
 using System;
@@ -23,41 +24,41 @@ namespace AI_Project.Service.Keras
             int trainCnt = (int)Math.Round((cnt * frac), 0);
             var trainingOptions = new ANNTrainingOptions();
 
-            trainingOptions.PredictorVariablesTraining = predictorData.Take(trainCnt).ToList();
-            trainingOptions.PredictorVariablesTest = predictorData.Skip(trainCnt).ToList();
+            trainingOptions.PredictorVariablesTraining = predictorData; //.Take(trainCnt).ToList();
+            //trainingOptions.PredictorVariablesTest = predictorData.Skip(trainCnt).ToList();
 
 
-            trainingOptions.PredictedVariablesTraining = predictedData.Take(trainCnt).ToList();
-            List<float> predictedVariablesTest = predictedData.Skip(trainCnt).ToList();
+            trainingOptions.PredictedVariablesTraining = predictedData; //.Take(trainCnt).ToList();
+            //List<float> predictedVariablesTest = predictedData.Skip(trainCnt).ToList();
             ANNExecutor annExecutor = new ANNExecutor();
             var results = annExecutor.Run(trainingOptions);
 
-            List<float> l1 = new List<float>();
-            List<float> l2 = new List<float>();
-            foreach (var item in results.PredictedValues)
-            {
-                l1.Add(item * (ServiceClass.loadMax - ServiceClass.loadMin) + ServiceClass.loadMin);
-            }
-            foreach (var item in predictedVariablesTest)
-            {
-                l2.Add(item * (ServiceClass.loadMax - ServiceClass.loadMin) + ServiceClass.loadMin);
-            }
+            //List<float> l1 = new List<float>();
+            //List<float> l2 = new List<float>();
+            //foreach (var item in results.PredictedValues)
+            //{
+            //    l1.Add(item * (ServiceClass.loadMax - ServiceClass.loadMin) + ServiceClass.loadMin);
+            //}
+            //foreach (var item in predictedVariablesTest)
+            //{
+            //    l2.Add(item * (ServiceClass.loadMax - ServiceClass.loadMin) + ServiceClass.loadMin);
+            //}
 
-            double sqrDeviation = GetSquareDeviation(results.PredictedValues, predictedVariablesTest);
-            float sum = 0;
-            for (int i = 0; i < results.PredictedValues.Count; i++)
-            {
-                sum += Math.Abs((l2[i] - l1[i]) / (l2[i]));
-            }
+            //double sqrDeviation = GetSquareDeviation(results.PredictedValues, predictedVariablesTest);
+            //float sum = 0;
+            //for (int i = 0; i < results.PredictedValues.Count; i++)
+            //{
+            //    sum += Math.Abs((l2[i] - l1[i]) / (l2[i]));
+            //}
 
-            float s = (sum / results.PredictedValues.Count) * 100;
+            //float s = (sum / results.PredictedValues.Count) * 100;
 
-            Console.WriteLine("SQR Deviation: " + sqrDeviation.ToString());
+            //Console.WriteLine("SQR Deviation: " + sqrDeviation.ToString());
         }
 
-        public async Task<Dictionary<DateTime, float>> Predict(List<Weather> weathers)
+        public async Task<List<ReturnModel>> Predict(List<Weather> weathers)
         {
-            var returnValue = new Dictionary<DateTime, float>();
+            var returnValue = new List<ReturnModel>();
 
             var trainingData = GetTrainingData(weathers);
             var predictorData = trainingData.Item1;
@@ -98,7 +99,7 @@ namespace AI_Project.Service.Keras
             int i = 0;
             foreach(Weather w in weathers)
             {
-                returnValue.Add(w.DateTimeOfMeasurement, results.PredictedValues[i]);
+                returnValue.Add(new ReturnModel() { Time = w.DateTimeOfMeasurement.ToString(), Value = results.PredictedValues[i].ToString() });
                 i++;
             }
 

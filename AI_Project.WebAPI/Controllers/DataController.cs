@@ -36,7 +36,6 @@ namespace AI_Project.WebAPI.Controllers
             return true;
         }
 
-        //GET: api/Data
         [HttpGet]
         public async Task<ActionResult<bool>> GetData()
         {
@@ -45,13 +44,21 @@ namespace AI_Project.WebAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<string>> Predict(DateTime startDate, DateTime endDate)
+        [Route("Predict")]
+        public async Task<ActionResult<string>> Predict(string startDate, string endDate)
         {
-            string result = await _dataService.PredictLoad(startDate, endDate);
+            string[] sDateStrings = startDate.Split('-');
+            DateTime sDate = new DateTime(int.Parse(sDateStrings[0]), int.Parse(sDateStrings[1]), int.Parse(sDateStrings[2]), 0, 0, 0);
+
+            string[] eDateStrings = endDate.Split('-');
+            DateTime eDate = new DateTime(int.Parse(eDateStrings[0]), int.Parse(eDateStrings[1]), int.Parse(eDateStrings[2]), 0, 0, 0);
+
+            List<ReturnModel> result = await _dataService.PredictLoad(sDate, eDate);
             return Ok(result);
         }
 
         [HttpGet]
+        [Route("Export")]
         public async Task<ActionResult> ExportToCSV()
         {
             await _dataService.ExportToCSV();

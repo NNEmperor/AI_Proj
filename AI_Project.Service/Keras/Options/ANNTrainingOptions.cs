@@ -7,8 +7,8 @@ namespace AI_Project.Service.Keras.Options
     public class ANNTrainingOptions
     {
 
-        private const int BATCH_SIZE_NUMBER = 1;
-        private const int EPOCH_NUMBER = 400;
+        private const int BATCH_SIZE_NUMBER = 10;
+        private const int EPOCH_NUMBER = 200;
         private const string COST_FUNCTION = "mean_absolute_error";
         private const string OPTIMIZER = "adam";
         private const string KERNEL_INITIALIZER = "normal";
